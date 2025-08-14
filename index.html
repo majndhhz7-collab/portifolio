@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ayman Elnagar — Portfolio</title>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0b0f14; --panel:#101720; --text:#e7eef6; --muted:#94a3b8;
+      --accent:#12d5df; --accent-2:#0fbcd0;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:"Poppins",system-ui,Segoe UI,Arial;
+      background: var(--bg); color:var(--text); overflow-x:hidden;
+    }
+
+    /* ===== Fullscreen particles canvas (behind everything) ===== */
+    #fx {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(1000px 600px at 85% 25%, #07262a 0%, transparent 60%) ,
+        radial-gradient(900px 500px at 10% 70%, #071c22 0%, transparent 60%),
+        var(--bg);
+    }
+
+    /* ===== Layout ===== */
+    .nav { position: sticky; top:0; z-index:5; backdrop-filter:saturate(140%) blur(8px); }
+    .nav::before{
+      content:""; position:absolute; inset:0; background:rgba(10,15,20,.45);
+      border-bottom:1px solid rgba(255,255,255,.06); pointer-events:none;
+    }
+    .container{width:min(1100px,92%); margin-inline:auto; position:relative; z-index:2;}
+    .nav-inner{display:flex; align-items:center; gap:18px; height:64px; position:relative}
+    .brand{font-weight:800; font-size:1.25rem; letter-spacing:.5px; text-decoration:none; color:var(--text)}
+    .brand .accent{color:var(--accent)}
+    .links{display:flex; gap:22px; margin-inline:auto}
+    .links a{color:var(--muted); text-decoration:none; font-weight:600; font-size:.9rem}
+    .links a:hover{color:var(--text)}
+    .burger{display:none; background:none; border:0; color:var(--text); font-size:1.2rem}
+
+    .hero{padding:88px 0 40px}
+    .hero-grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:40px; align-items:center;}
+    .hello{color:var(--muted); margin:0 0 .35rem; letter-spacing:.6px}
+    .name{font-size:clamp(36px,6vw,64px); line-height:.95; margin:.2rem 0 0}
+    .first{font-weight:800; color:#fff}
+    .last{font-weight:800; color:var(--accent)}
+    .role{margin:.7rem 0 1.2rem; font-size:1.1rem; color:var(--muted)}
+    .socials{display:flex; gap:12px; margin:26px 0}
+    .socials a{
+      width:40px; height:40px; border-radius:50%; display:grid; place-items:center;
+      color:var(--text); text-decoration:none; border:1.2px solid rgba(255,255,255,.15);
+      transition:.25s transform,.25s background-color,.25s border-color;
+    }
+    .socials a:hover{ transform:translateY(-4px) scale(1.05); border-color:rgba(255,255,255,.35); background:rgba(18,213,223,.08); }
+
+    .btn-outline{
+      display:inline-flex; align-items:center; gap:.55rem;
+      padding:.85rem 1.25rem; border-radius:12px;
+      border:1.4px dashed rgba(255,255,255,.22);
+      color:var(--text); text-decoration:none; font-weight:700;
+      transition:.25s transform,.25s background,.25s border-color,.25s box-shadow;
+    }
+    .btn-outline:hover{
+      transform:translateY(-2px);
+      border-color:var(--accent);
+      background:linear-gradient(135deg, rgba(18,213,223,.12), rgba(18,213,223,.02));
+      box-shadow:0 10px 30px rgba(18,213,223,.18);
+    }
+
+    /* Right photo + blob */
+    .photo-wrap{position:relative; display:grid; place-items:center; min-height:380px}
+    .blob{
+      position:absolute; width:85%; aspect-ratio:1/1;
+      background: radial-gradient(60% 60% at 40% 40%, var(--accent) 0%, var(--accent-2) 35%, #0b7e9a 70%, transparent 72%);
+      filter: blur(8px) drop-shadow(0 12px 40px rgba(18,213,223,.35));
+      border-radius:58% 42% 63% 37% / 42% 53% 47% 58%;
+      animation: blob 9s ease-in-out infinite;
+    }
+    .photo{
+      position:relative; width:min(380px,85%); border-radius:22px;
+      box-shadow:0 18px 50px rgba(0,0,0,.45), 0 14px 40px rgba(18,213,223,.18);
+      transform: translateZ(0); animation: levitate 6s ease-in-out infinite;
+    }
+
+    /* Demo sections (optional below hero just to scroll) */
+    .section{padding:70px 0}
+    .section h2{margin:0 0 18px; font-size:1.8rem}
+    .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px}
+    .card{background:var(--panel); padding:18px; border-radius:14px; border:1px solid rgba(255,255,255,.06)}
+    .footer{border-top:1px solid rgba(255,255,255,.06); padding:28px 0; color:var(--muted); font-size:.95rem;}
+
+    /* Reveal on scroll */
+    .reveal{opacity:0; transform: translateY(24px) scale(.98);}
+    .reveal.revealed{opacity:1; transform:none; transition:.7s cubic-bezier(.2,.7,.2,1)}
+
+    /* Animations */
+    @keyframes blob{
+      0%{ border-radius:58% 42% 63% 37% / 42% 53% 47% 58%; transform: translate(0,0) rotate(0deg) }
+      33%{ border-radius:40% 60% 45% 55% / 60% 40% 60% 40%; transform: translate(-6px,8px) rotate(8deg) }
+      66%{ border-radius:55% 45% 60% 40% / 45% 60% 40% 55%; transform: translate(6px,-10px) rotate(-6deg) }
+      100%{ border-radius:58% 42% 63% 37% / 42% 53% 47% 58%; transform: translate(0,0) rotate(0deg) }
+    }
+    @keyframes levitate{
+      0%,100%{ transform: translateY(0) }
+      50%{ transform: translateY(-10px) }
+    }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      .hero-grid{grid-template-columns:1fr; gap:50px}
+      .links{display:none}
+      .burger{display:block}
+    }
+  </style>
+</head>
+<body>
+  <!-- particles canvas -->
+  <canvas id="fx"></canvas>
+
+  <!-- NAV -->
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="#"><span>Port</span><span class="accent">folio</span></a>
+      <nav class="links">
+        <a href="#home">HOME</a>
+        <a href="#about">ABOUTME</a>
+        <a href="#projects">PROJECTS</a>
+        <a href="#skills">SKILLS</a>
+        <a href="#contact">CONTACT ME</a>
+      </nav>
+      <button class="burger" aria-label="menu"><i class="fa-solid fa-bars"></i></button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <main id="home" class="hero">
+    <div class="container hero-grid">
+      <!-- Left: text -->
+      <section class="intro reveal">
+        <p class="hello">Hello, my name is</p>
+        <h1 class="name">
+          <span class="first">Ayman</span> <span class="last">Elnagar</span>
+        </h1>
+        <p class="role">I'm a <span class="accent">Full Stack Developer</span></p>
+
+        <div class="socials">
+          <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" aria-label="X"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="#" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+        </div>
+
+        <a class="btn-outline" href="assets/Ayman-Elnagar-CV.pdf" download>
+          <i class="fa-solid fa-download"></i> DOWNLOAD CV
+        </a>
+      </section>
+
+      <!-- Right: photo with blob -->
+      <section class="photo-wrap reveal" aria-label="Profile photo">
+        <div class="blob"></div>
+        <img class="photo"
+          src="https://media.discordapp.net/attachments/1403490774062207098/1405529057025593384/IMG_20240723_143122_619.jpg?ex=689f2870&is=689dd6f0&hm=7568646c142481919581021b80d54f2614a589bec7d84cbee8547c76d7c9b00a&=&format=webp&width=856&height=856"
+          alt="Ayman Elnagar portrait"/>
+      </section>
+    </div>
+  </main>
+
+  <!-- Optional sections to scroll -->
+  <section id="about" class="container section reveal">
+    <h2>About Me</h2>
+    <p>My name is Ayman, I am 18 years old from Egypt, Full Stack Devoleper Based In Mansoura, Egypt . You dream, I execute.</p>
+  </section>
+
+  <section id="projects" class="container section reveal">
+    <h2>Projects</h2>
+    <div class="cards">
+      <div class="card">Dashboard with charts</div>
+      <div class="card">Landing page for startup</div>
+      <div class="card">Mini e-commerce UI</div>
+    </div>
+  </section>
+
+  <section id="skills" class="container section reveal">
+    <h2>Skills</h2>
+    HTML · CSS · JavaScript · React · Tailwind
+  </section>
+
+  <section id="contact" class="container section reveal">
+    <h2>Contact</h2>
+    <p>Email: <a class="accent" href="mailto:ayman@example.com">ayman@example.com</a></p>
+  </section>
+
+  <footer class="footer">
+    <div class="container">© <span id="year"></span> Ayman Elnagar — All rights reserved.</div>
+  </footer>
+
+  <script>
+    // Footer year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Reveal sections on scroll
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('revealed'); io.unobserve(e.target);} });
+    },{threshold:.2});
+    document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+    // ===== Particles =====
+    const c = document.getElementById('fx');
+    const ctx = c.getContext('2d');
+    let W,H, DPR = Math.min(window.devicePixelRatio || 1, 2);
+    const state = { particles:[], mouse:{x:0,y:0, active:false} };
+
+    function resize(){
+      W = c.clientWidth = window.innerWidth;
+      H = c.clientHeight = window.innerHeight;
+      c.width = W * DPR; c.height = H * DPR;
+      ctx.setTransform(DPR,0,0,DPR,0,0);
+    }
+    window.addEventListener('resize', resize); resize();
+
+    // Create particles
+    const BASE_COUNT = 110; // عدّل الرقم لو عايز أقل/أكثر
+    function spawn(){
+      state.particles.length = 0;
+      const count = Math.floor(BASE_COUNT * (W*H)/(1280*720)); // يتناسب مع مساحة الشاشة
+      for(let i=0;i<count;i++){
+        state.particles.push({
+          x: Math.random()*W,
+          y: Math.random()*H,
+          vx: (Math.random()-0.5)*0.4,
+          vy: (Math.random()-0.5)*0.4,
+          r: 1.2 + Math.random()*1.8,
+          alpha: 0.35 + Math.random()*0.45
+        });
+      }
+    }
+    spawn(); window.addEventListener('resize', spawn);
+
+    // Mouse
+    window.addEventListener('mousemove', (e)=>{
+      state.mouse.x = e.clientX; state.mouse.y = e.clientY; state.mouse.active = true;
+    });
+    window.addEventListener('mouseleave', ()=> state.mouse.active = false);
+
+    function step(){
+      ctx.clearRect(0,0,W,H);
+
+      // Soft radial light around mouse
+      if(state.mouse.active){
+        const g = ctx.createRadialGradient(state.mouse.x, state.mouse.y, 0, state.mouse.x, state.mouse.y, 220);
+        g.addColorStop(0, 'rgba(18,213,223,0.10)');
+        g.addColorStop(1, 'rgba(18,213,223,0.0)');
+        ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+      }
+
+      // Update & draw particles
+      for(const p of state.particles){
+        // Attraction to mouse (subtle)
+        if(state.mouse.active){
+          const dx = state.mouse.x - p.x;
+          const dy = state.mouse.y - p.y;
+          const dist2 = dx*dx + dy*dy;
+          if(dist2 < 220*220){
+            const f = 0.0009; // قوة الجذب
+            p.vx += dx * f;
+            p.vy += dy * f;
+          }
+        }
+
+        p.x += p.vx; p.y += p.vy;
+
+        // Bounce off edges
+        if(p.x < 0 || p.x > W) p.vx *= -1;
+        if(p.y < 0 || p.y > H) p.vy *= -1;
+
+        // Draw dot
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(200, 255, 255, ${p.alpha})`;
+        ctx.fill();
+      }
+
+      // Draw connecting lines for nearby particles
+      ctx.lineWidth = 1;
+      for(let i=0;i<state.particles.length;i++){
+        const a = state.particles[i];
+        for(let j=i+1;j<state.particles.length;j++){
+          const b = state.particles[j];
+          const dx = a.x-b.x, dy = a.y-b.y;
+          const d2 = dx*dx+dy*dy;
+          if(d2 < 150*150){
+            const o = 1 - (Math.sqrt(d2)/150);
+            ctx.strokeStyle = `rgba(18,213,223,${0.18*o})`;
+            ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+    step();
+
+    // Simple mobile menu toggle (optional)
+    document.querySelector('.burger')?.addEventListener('click', ()=>{
+      const nav = document.querySelector('.links');
+      if(getComputedStyle(nav).display==='none'){
+        nav.style.cssText='display:flex; flex-direction:column; gap:14px; position:fixed; top:70px; right:20px; background:#101720; border:1px solid rgba(255,255,255,.08); padding:14px 18px; border-radius:12px; z-index:6;';
+      } else {
+        nav.style.display='none';
+      }
+    });
+  </script>
+</body>
+</html>
